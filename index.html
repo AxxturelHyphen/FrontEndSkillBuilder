@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SISTEMA DE SOLICITUDES</title>
+
+  <!-- JetBrains Mono — única fuente permitida -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- ================================================== -->
+    <!-- HEADER                                             -->
+    <!-- ================================================== -->
+    <header class="header">
+      <h1 class="header__titulo" data-text="SISTEMA DE SOLICITUDES">SISTEMA DE SOLICITUDES</h1>
+      <div class="header__estado">
+        <span class="header__indicador header__indicador--desconectado" id="indicador-conexion"></span>
+        <span id="texto-conexion">VERIFICANDO</span>
+      </div>
+    </header>
+
+    <!-- Banner modo mock (oculto por defecto) -->
+    <div class="mock-banner" id="mock-banner" style="display: none;">
+      [MODO DEMO] MONGODB NO CONFIGURADO — MOSTRANDO DATOS DE EJEMPLO.
+      EDITAR config.js PARA CONECTAR A MONGODB ATLAS.
+    </div>
+
+    <!-- Contenedor de errores -->
+    <div class="error-msg" id="error-container"></div>
+
+    <!-- ================================================== -->
+    <!-- ESTADÍSTICAS RÁPIDAS                               -->
+    <!-- ================================================== -->
+    <div class="seccion-titulo">ESTADISTICAS RAPIDAS</div>
+    <div class="stats">
+      <div class="stats__card">
+        <div class="stats__label">TOTAL</div>
+        <div class="stats__valor" id="stat-total">--</div>
+      </div>
+      <div class="stats__card">
+        <div class="stats__label">PENDIENTE</div>
+        <div class="stats__valor" id="stat-pendiente">--</div>
+      </div>
+      <div class="stats__card">
+        <div class="stats__label">CONFIRMADA</div>
+        <div class="stats__valor" id="stat-confirmada">--</div>
+      </div>
+      <div class="stats__card">
+        <div class="stats__label">DENEGADA</div>
+        <div class="stats__valor" id="stat-denegada">--</div>
+      </div>
+    </div>
+
+    <!-- ================================================== -->
+    <!-- FILTROS                                            -->
+    <!-- ================================================== -->
+    <div class="seccion-titulo">FILTROS</div>
+    <div class="filtros" id="filtros">
+      <button class="filtros__btn filtros__btn--activo" data-filtro="">TODAS</button>
+      <button class="filtros__btn" data-filtro="pendiente">PENDIENTE</button>
+      <button class="filtros__btn" data-filtro="confirmada">CONFIRMADA</button>
+      <button class="filtros__btn" data-filtro="denegada">DENEGADA</button>
+    </div>
+
+    <!-- ================================================== -->
+    <!-- TABLA DE SOLICITUDES                               -->
+    <!-- ================================================== -->
+    <div class="seccion-titulo">SOLICITUDES</div>
+    <div class="tabla-wrapper">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>CLIENTE</th>
+            <th>FECHA / HORA</th>
+            <th>SERVICIO</th>
+            <th>ESTADO</th>
+            <th>ACCIONES</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-body">
+          <tr>
+            <td colspan="6" class="tabla-vacia">
+              <span class="loading-text">CARGANDO</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ================================================== -->
+    <!-- GRÁFICAS                                           -->
+    <!-- ================================================== -->
+    <div class="seccion-titulo">ACTIVIDAD</div>
+    <div class="graficas">
+      <div class="grafica-card">
+        <div class="grafica-card__titulo">SOLICITUDES POR DIA (ULTIMOS 7 DIAS)</div>
+        <div id="grafica-barras"></div>
+      </div>
+      <div class="grafica-card">
+        <div class="grafica-card__titulo">DISTRIBUCION DE ESTADOS</div>
+        <div id="grafica-estados"></div>
+      </div>
+    </div>
+
+    <!-- ================================================== -->
+    <!-- FOOTER                                             -->
+    <!-- ================================================== -->
+    <footer class="footer">
+      <div class="footer__polling">
+        <span class="footer__pulse"></span>
+        POLLING ACTIVO — CADA 30S
+      </div>
+      <div>
+        ULTIMO REFRESH: <span id="ultimo-refresh">--:--:--</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ================================================== -->
+  <!-- MODAL DE DETALLE                                   -->
+  <!-- ================================================== -->
+  <div class="detalle-overlay" id="detalle-overlay">
+    <div class="detalle-panel">
+      <div class="detalle-panel__titulo">DETALLE DE SOLICITUD</div>
+      <div id="detalle-contenido"></div>
+      <button class="detalle-panel__cerrar" onclick="cerrarDetalle()">CERRAR</button>
+    </div>
+  </div>
+
+  <!-- Scripts (orden importante: config → mongodb → charts → app) -->
+  <script src="config.js"></script>
+  <script src="mongodb.js"></script>
+  <script src="charts.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
