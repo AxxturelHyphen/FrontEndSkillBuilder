@@ -512,10 +512,297 @@ function activarModoMock() {
 }
 
 // ============================================================
+// CARRUSEL DE CONSULTAS MONGODB
+// ============================================================
+
+const QUERY_SLIDES = [
+  {
+    title: 'PROYECTOS POR MENTOR',
+    explanation: 'Consulta simple para encontrar todos los proyectos asociados a un mentor específico. Útil para ver la carga de trabajo de cada mentor y qué proyectos están bajo su supervisión.',
+    query: `db.projects.find({
+  "mentor.mentorId": "mentor_010"
+})`,
+    queryType: 'simple'
+  },
+  {
+    title: 'RECURSOS POR PROYECTO',
+    explanation: 'Buscar todos los recursos (documentos, PDFs, enlaces) vinculados a un proyecto específico. Permite organizar materiales de aprendizaje por proyecto.',
+    query: `db.resources.find({
+  projectId: "proj_007"
+})`,
+    queryType: 'simple'
+  },
+  {
+    title: 'TAREAS PENDIENTES',
+    explanation: 'Filtrar todas las tareas que aún no han sido iniciadas (estado TODO). Esencial para planificar el trabajo pendiente y priorizar tareas.',
+    query: `db.tasks.find({
+  status: "TODO"
+})`,
+    queryType: 'simple'
+  },
+  {
+    title: 'TOP 10 PROYECTOS ACTIVOS',
+    explanation: 'Agregación que identifica los 10 proyectos con mayor actividad basándose en el total de tareas completadas. Usa pipeline de agregación con múltiples etapas.',
+    query: `db.projects.aggregate([
+  {
+    $match: {
+      "taskCounts.done": { $gt: 0 }
+    }
+  },
+  {
+    $project: {
+      name: 1,
+      owner: 1,
+      totalTasks: {
+        $add: [
+          "$taskCounts.todo",
+          "$taskCounts.doing",
+          "$taskCounts.done"
+        ]
+      },
+      completedTasks: "$taskCounts.done"
+    }
+  },
+  {
+    $sort: { totalTasks: -1 }
+  },
+  {
+    $limit: 10
+  }
+])`,
+    queryType: 'aggregation'
+  },
+  {
+    title: 'SKILLS AVANZADOS MÁS COMUNES',
+    explanation: 'Agregación compleja que descompone el array de skills de cada mentor, filtra solo habilidades de nivel avanzado (≥ 3), y agrupa para contar cuáles son más frecuentes.',
+    query: `db.mentors.aggregate([
+  {
+    $match: {
+      t_level: { $gte: 3 }
+    }
+  },
+  {
+    $unwind: "$skills"
+  },
+  {
+    $group: {
+      _id: "$skills",
+      count: { $sum: 1 },
+      mentors: { $push: "$name" }
+    }
+  },
+  {
+    $sort: { count: -1 }
+  }
+])`,
+    queryType: 'aggregation'
+  },
+  {
+    title: 'TAREAS ORDENADAS POR FECHA',
+    explanation: 'Agregación que filtra tareas con fecha de vencimiento, las proyecta con campos específicos, y las ordena por fecha más cercana. Limita a 10 resultados.',
+    query: `db.tasks.aggregate([
+  {
+    $match: {
+      dueDate: { $exists: true }
+    }
+  },
+  {
+    $project: {
+      title: 1,
+      status: 1,
+      dueDate: 1,
+      projectId: 1
+    }
+  },
+  {
+    $sort: { dueDate: -1 }
+  },
+  {
+    $limit: 10
+  }
+])`,
+    queryType: 'aggregation'
+  }
+];
+
+// Estado del carrusel
+let queryCarouselState = {
+  currentSlide: 0,
+  totalSlides: QUERY_SLIDES.length
+};
+
+// ============================================================
+// FUNCIONES DEL CARRUSEL
+// ============================================================
+
+function setupQueryCarousel() {
+  const btn = document.getElementById('cristina-btn');
+  const overlay = document.getElementById('query-overlay');
+  const closeBtn = document.getElementById('query-close-btn');
+  const prevBtn = document.getElementById('query-prev-btn');
+  const nextBtn = document.getElementById('query-next-btn');
+
+  // Abrir carrusel
+  btn.addEventListener('click', abrirQueryCarousel);
+
+  // Cerrar carrusel
+  closeBtn.addEventListener('click', cerrarQueryCarousel);
+
+  // Cerrar al hacer click fuera del panel
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      cerrarQueryCarousel();
+    }
+  });
+
+  // Navegación
+  prevBtn.addEventListener('click', previousSlide);
+  nextBtn.addEventListener('click', nextSlide);
+
+  // Teclado
+  document.addEventListener('keydown', (e) => {
+    if (!overlay.classList.contains('query-overlay--visible')) return;
+
+    if (e.key === 'Escape') {
+      cerrarQueryCarousel();
+    } else if (e.key === 'ArrowLeft') {
+      previousSlide();
+    } else if (e.key === 'ArrowRight') {
+      nextSlide();
+    }
+  });
+}
+
+function abrirQueryCarousel() {
+  const overlay = document.getElementById('query-overlay');
+  overlay.classList.add('query-overlay--visible');
+
+  // Renderizar slides y dots
+  renderQuerySlides();
+  renderQueryDots();
+
+  // Reset a primer slide
+  queryCarouselState.currentSlide = 0;
+  showSlide(0);
+}
+
+function cerrarQueryCarousel() {
+  const overlay = document.getElementById('query-overlay');
+  overlay.classList.remove('query-overlay--visible');
+}
+
+function renderQuerySlides() {
+  const carousel = document.getElementById('query-carousel');
+
+  // Mapeo de extensiones por índice (query-1.jpg, query-2.jpg, query-3.jpg, query-4.png, query-5.png, query-6.jpg)
+  const imageExtensions = ['jpg', 'jpg', 'jpg', 'png', 'png', 'jpg'];
+
+  carousel.innerHTML = QUERY_SLIDES.map((slide, index) => {
+    const ext = imageExtensions[index];
+    const imagePath = `images/query-${index + 1}.${ext}`;
+
+    return `
+      <div class="query-slide ${index === 0 ? 'query-slide--active' : ''}" data-slide="${index}">
+        <h2 class="query-slide__title">${slide.title}</h2>
+
+        <div class="query-slide__explanation">
+          ${slide.explanation}
+        </div>
+
+        <div class="query-slide__code-label">CÓDIGO MONGODB:</div>
+        <pre class="query-slide__code">${formatMongoQuery(slide.query)}</pre>
+
+        <img src="${imagePath}" alt="${slide.title}" class="query-slide__image">
+      </div>
+    `;
+  }).join('');
+}
+
+function formatMongoQuery(query) {
+  // Syntax highlighting básico
+  return query
+    .replace(/\b(find|aggregate|match|project|sort|limit|group|unwind|add|sum|push|exists|gt|gte|lte)\b/g, '<span class="keyword">$1</span>')
+    .replace(/"([^"]+)"/g, '<span class="string">"$1"</span>')
+    .replace(/\b(\d+)\b/g, '<span class="number">$1</span>')
+    .replace(/(\$[a-zA-Z]+)/g, '<span class="operator">$1</span>');
+}
+
+function renderQueryDots() {
+  const dotsContainer = document.getElementById('query-dots');
+
+  dotsContainer.innerHTML = QUERY_SLIDES.map((_, index) => `
+    <div class="query-dot ${index === 0 ? 'query-dot--active' : ''}"
+         data-slide="${index}"
+         onclick="goToSlide(${index})">
+    </div>
+  `).join('');
+}
+
+function updateQueryNavigation() {
+  const { currentSlide, totalSlides } = queryCarouselState;
+
+  // Actualizar botones
+  document.getElementById('query-prev-btn').disabled = currentSlide === 0;
+  document.getElementById('query-next-btn').disabled = currentSlide === totalSlides - 1;
+
+  // Actualizar contador
+  document.getElementById('query-current').textContent = currentSlide + 1;
+  document.getElementById('query-total').textContent = totalSlides;
+
+  // Actualizar dots
+  document.querySelectorAll('.query-dot').forEach((dot, index) => {
+    dot.classList.toggle('query-dot--active', index === currentSlide);
+  });
+}
+
+function previousSlide() {
+  if (queryCarouselState.currentSlide > 0) {
+    queryCarouselState.currentSlide--;
+    showSlide(queryCarouselState.currentSlide);
+  }
+}
+
+function nextSlide() {
+  if (queryCarouselState.currentSlide < queryCarouselState.totalSlides - 1) {
+    queryCarouselState.currentSlide++;
+    showSlide(queryCarouselState.currentSlide);
+  }
+}
+
+function goToSlide(index) {
+  queryCarouselState.currentSlide = index;
+  showSlide(index);
+}
+
+function showSlide(index) {
+  // Ocultar todos los slides
+  document.querySelectorAll('.query-slide').forEach(slide => {
+    slide.classList.remove('query-slide--active');
+  });
+
+  // Mostrar slide actual
+  const activeSlide = document.querySelector(`.query-slide[data-slide="${index}"]`);
+  if (activeSlide) {
+    activeSlide.classList.add('query-slide--active');
+  }
+
+  // Actualizar navegación
+  updateQueryNavigation();
+}
+
+// Inicializar carrusel cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => {
+  setupQueryCarousel();
+});
+
+// ============================================================
 // EXPONER FUNCIONES GLOBALES
 // ============================================================
 
 window.mostrarDetalle = mostrarDetalle;
 window.cerrarDetalle = cerrarDetalle;
+window.abrirQueryCarousel = abrirQueryCarousel;
+window.cerrarQueryCarousel = cerrarQueryCarousel;
+window.goToSlide = goToSlide;
 
 console.log('[DB Manager] Aplicación lista');
