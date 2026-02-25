@@ -149,6 +149,7 @@ La aplicación gestiona las siguientes colecciones en la base de datos `skillbui
 **users**: `{ _id, name, email, workspaceId, createdAt }`
 **resources**: `{ _id, name, type, url, projectId, workspaceId, createdAt }`
 
+![skillbuilderdiagrama.png](assets/skillbuilderdiagrama.png)
 ### ⚠️ Advertencia de seguridad
 
 **NUNCA commitees el archivo `backend/.env` con credenciales reales a un repositorio público.** Este archivo ya está incluido en `.gitignore` para proteger tus credenciales de MongoDB.
