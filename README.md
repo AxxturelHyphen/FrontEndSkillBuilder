@@ -22,7 +22,7 @@ Diagrama en MongoDB
 
 ## Flujo N8N
     
-Este es el flujo de N8N se encarga de a traves de  un trigger de telegram, obtener el mensaje y dependiendo del comando, se invia a una "IA tonta" que se encarga de traducir el texto a sintaxis de mongoDB, que se conecta a MongoDB Atlas para obtener la información solicitada y luego responde al usuario con los datos obtenidos.
+Este es el flujo de N8N se encarga de a traves de un trigger de telegram, obtener el mensaje y dependiendo del comando, se envia a una "IA tonta" que se encarga de traducir el texto a sintaxis de mongoDB, que se conecta a MongoDB Atlas para obtener la información solicitada y luego responde al usuario con los datos obtenidos.
 ![Flujo N8N](./images/Captura%20de%20pantalla%202026-02-26%20101426.png)
 
 
@@ -68,7 +68,7 @@ Agregación compleja que descompone el array de skills de cada mentor, filtra so
 
 
 
-## Reparto de tareqas
+## Reparto de tareas
 
 - Flujo de n8n: Guija, Pablo y Hugo
 - Backend y Frontend: Guija
