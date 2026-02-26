@@ -9,11 +9,81 @@ SkillBuilder DB Manager es una aplicación web completa (frontend + backend) que
 La aplicación incluye un backend Express.js que se conecta directamente a MongoDB Atlas usando el driver nativo, proporcionando una API REST para que el frontend consuma los datos de forma segura. También ofrece un modo de demostración con datos de ejemplo cuando no hay conexión configurada, lo que facilita el desarrollo y las pruebas.
 ## Diagramas
 
-## Flujo
 
-## Diagramas
+Diagrama en Sql
+
+![Diagrama de arquitectura general sql](./images/diagramaER.png)
+
+Diagrama en MongoDB
 
 
+![Diagrama de mongo](./images/skillbuilder_13_02_2026.png)
+
+
+## Flujo N8N
+    
+Este es el flujo de N8N se encarga de a traves de  un trigger de telegram, obtener el mensaje y dependiendo del comando, se invia a una "IA tonta" que se encarga de traducir el texto a sintaxis de mongoDB, que se conecta a MongoDB Atlas para obtener la información solicitada y luego responde al usuario con los datos obtenidos.
+![Flujo N8N](./images/Captura de pantalla 2026-02-26 101426.png)
+
+
+## MongoDB: CRUD, consultas simples (find) y consultas complejas (aggregate)
+
+### PROYECTOS POR MENTOR
+
+Consulta simple para encontrar todos los proyectos asociados a un mentor específico. Útil para ver la carga de trabajo de cada mentor y qué proyectos están bajo su supervisión.
+
+
+![CRUD y consultas MongoDB](./images/consulta1.png)
+
+### RECURSOS POR PROYECTO
+
+Buscar todos los recursos (documentos, PDFs, enlaces) vinculados a un proyecto específico. Permite organizar materiales de aprendizaje por proyecto.
+
+
+![CRUD y consultas MongoDB](./images/consulta2.png)
+
+
+### TAREAS PENDIENTES
+
+Filtrar todas las tareas que aún no han sido iniciadas (estado TODO). Esencial para planificar el trabajo pendiente y priorizar tareas.
+
+
+![CRUD y consultas MongoDB](./images/consulta3.png)
+
+
+### TOP 10 PROYECTOS ACTIVOS
+
+Agregación que identifica los 10 proyectos con mayor actividad basándose en el total de tareas completadas. Usa pipeline de agregación con múltiples etapas.
+
+![CRUD y consultas MongoDB](./images/consulta4.png)
+
+### SKILLS AVANZADOS MÁS COMUNES
+
+Agregación compleja que descompone el array de skills de cada mentor, filtra solo habilidades de nivel avanzado (≥ 3), y agrupa para contar cuáles son más frecuentes.
+
+
+![CRUD y consultas MongoDB](./images/consulta5.png)
+
+![CRUD y consultas MongoDB](./images/consulta55.png)
+
+
+
+## Reparto de tareqas
+
+- Flujo de n8n: Guija, Pablo y Hugo
+- Backend y Frontend: Guija
+- Consultas MongoDB: Hugo
+- Documentación: Pablo
+
+## Propuestas de mejora
+
+- Implementar autenticación de usuarios para acceso seguro al dashboard
+- Agregar funcionalidad de edición y eliminación de documentos desde el frontend
+- Integrar notificaciones en tiempo real para cambios en la base de datos
+
+## Conclusión
+
+Gracias a este proyecto, hemos creado una herramienta de administración de bases de datos MongoDB con un diseño único y funcionalidades avanzadas, demostrando habilidades en desarrollo full-stack, diseño de interfaces y manejo de bases de datos. El uso de tecnologías modernas y la implementación de características como polling automático y gráficas SVG nativas hacen que este dashboard sea una solución robusta para la gestión de datos en entornos educativos o empresariales. Asi como integrar la herramienta de automatización N8N para facilitar la interacción con la base de datos a través de comandos de Telegram, lo que añade una capa adicional de accesibilidad y conveniencia para los usuarios.
 
 ## Características principales
 
